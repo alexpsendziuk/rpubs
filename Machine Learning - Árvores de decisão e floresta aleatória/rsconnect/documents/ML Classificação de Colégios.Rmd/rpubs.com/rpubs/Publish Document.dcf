@@ -1,0 +1,10 @@
+name: Publish Document
+title:
+username:
+account: rpubs
+server: rpubs.com
+hostUrl: rpubs.com
+appId: https://api.rpubs.com/api/v1/document/670998/17b565b7cc9e41b78d44a09cd5f3cb29
+bundleId: https://api.rpubs.com/api/v1/document/670998/17b565b7cc9e41b78d44a09cd5f3cb29
+url: http://rpubs.com/psndzk/670998
+when: 1601931224.19613

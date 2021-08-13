@@ -1,0 +1,114 @@
+---
+output:
+  html_notebook: default
+  html_document: default
+---
+Micro Projeto em R de Machine Learning, nele usaremos decisions trees e depois floresta aleatória para classificar escolas como Públicas ou Privadas baseadas em suas características. Será utilizado o dataframe College que vem com a livraria ISLR.
+
+Carregando as livrarias:
+```{r fig.height=8, fig.width=8}
+install.packages("ggplot2","ISLR","dplyr","caToolds","rpart","rpart.plot","randomForest")
+library(ggplot2)
+library(ISLR)
+library(dplyr)
+library(caTools)
+library(rpart)
+```
+
+Montando e exibindo o dataframe:
+```{r fig.height=8, fig.width=8}
+df <- College
+head(College)
+```
+
+Análise Exploratória de Dados
+
+Exploração de dados básica antes de começarmos a construção dos modelos.
+
+Scatterplot da taxa de graduação vs custos de sala e inscrição:
+```{r fig.height=8, fig.width=8}
+ggplot(df,aes(Room.Board,Grad.Rate)) + geom_point(aes(color=Private))
+```
+
+Faz sentido ver que os colégios privados tem custos mais elevados.
+
+Agora um histograma mostrando os estudantes de tempo integral colorido em privado ou não:
+```{r fig.height=8, fig.width=8}
+ggplot(df,aes(F.Undergrad)) + geom_histogram(aes(fill=Private),color="black",bins=50)
+```
+
+Histograma da taxa de graduação, colorida se privada ou  não:
+```{r fig.height=8, fig.width=8}
+ggplot(df,aes(Grad.Rate)) + geom_histogram(aes(fill=Private),color="black",bins=50)
+```
+
+Tem um colégio com a taxa de graduação acima de 100%. Vamos encontrá-lo e fixa-lo.
+```{r}
+subset(df,Grad.Rate>100)
+```
+
+Arrumando:
+```{r fig.height=8, fig.width=8}
+df['Cazenovia College','Grad.Rate'] <- 100
+```
+
+Divisão de treino e teste:
+```{r fig.height=8, fig.width=8}
+set.seed(101)
+
+sample = sample.split(df$Private,SplitRatio=0.7)
+train = subset(df,sample==T)
+test = subset(df,sample==F)
+```
+
+Árvore de Decisão
+
+Construindo o modelo e fazendo predições:
+```{r fig.height=8, fig.width=8}
+tree <- rpart(Private ~ . ,method="class",data=train)
+tree.preds <- predict(tree,test)
+head(tree.preds)
+```
+
+Criando uma coluna nomeada “Private”, com as variáveis Sim/Não para indicar se o colégio é público ou não, para combinar com o dataframe original, assim podemos comparar os resultados facilmente:
+```{r fig.height=8, fig.width=8}
+tree.preds <- as.data.frame(tree.preds)
+tree.preds$Private <- ifelse(tree.preds$Yes > 0.5,"Sim","Não")
+```
+
+Checando a Matriz de confusão:
+```{r fig.height=8, fig.width=8}
+table(tree.preds$Private,test$Private)
+```
+
+Visualizando a árvore:
+```{r}
+library(rpart.plot)
+prp(tree)
+```
+
+Floresta Aleatória
+
+Carregando a livraria:
+```{r fig.height=8, fig.width=8}
+library(randomForest)
+```
+
+Construindo o modelo:
+```{r fig.height=8, fig.width=8}
+rf.model <- randomForest(Private ~ ., data=train,importance=TRUE)
+```
+
+Fazendo as predições:
+```{r fig.height=8, fig.width=8}
+p <- predict(rf.model,test)
+table(p,test$Private)
+```
+
+Nós vemos que o modelo performou melhor que a árvore de decisão.
+
+Projeto baseado no repositório de Sajal Sharma, elaborado em 11/12/2016. Link: https://rpubs.com/sajal_sharma/micro_dt_rf
+
+Dados contidos na livraria ISLR, utilizados apenas para fins educacionais.
+
+Traduzido e formatado por Alexsander Santos Psendziuk em 2020. Contato: alexpsendziuk@gmail.com
